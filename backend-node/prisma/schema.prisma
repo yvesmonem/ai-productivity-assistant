@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  documents Document[]
+  chats      Chat[]
+}
+
+model Document {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  type        DocumentType
+  fileUrl     String
+  fileKey     String // MinIO object key
+  mimeType    String
+  fileSize    Int
+  status      DocumentStatus @default(PROCESSING)
+  
+  // PDF-specific
+  summary     String?
+  keyPoints   String[] // JSON array
+  actionItems String[] // JSON array
+  glossary    Json?    // JSON object
+  
+  // Transcription-specific
+  transcript  String?
+  highlights  String[] // JSON array
+  decisions   String[] // JSON array
+  followUpEmail String?
+  
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chats       Chat[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+enum DocumentType {
+  PDF
+  AUDIO
+  VIDEO
+  TEXT
+}
+
+enum DocumentStatus {
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model Chat {
+  id        String   @id @default(cuid())
+  userId    String
+  documentId String?
+  message   String
+  response  String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  document  Document? @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([documentId])
+}
+
+model Report {
+  id        String   @id @default(cuid())
+  userId    String
+  topic     String
+  title     String
+  content   String
+  sections  Json     // JSON object with sections
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
