@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   postgres:
@@ -39,4 +39,3 @@ services:
 volumes:
   postgres_data:
   minio_data:
-

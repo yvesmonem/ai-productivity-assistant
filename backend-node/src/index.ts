@@ -22,9 +22,35 @@ app.use('/api/documents', documentRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/chat', chatRoutes);
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Neo AI Workspace API',
+    version: '1.0.0',
+    endpoints: {
+      health: '/health',
+      auth: '/api/auth',
+      documents: '/api/documents',
+      reports: '/api/reports',
+      chat: '/api/chat',
+    },
+    frontend: 'http://localhost:3000',
+  });
+});
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Catch-all route handler for undefined routes
+app.use((req, res) => {
+  res.status(404).json({ 
+    error: 'Route not found',
+    path: req.path,
+    method: req.method,
+    message: `Cannot ${req.method} ${req.path}`
+  });
 });
 
 app.listen(PORT, () => {
